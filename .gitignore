@@ -1,0 +1,10 @@
+node_modules
+*.heapsnapshot
+.idea
+*.log
+*.env
+.DS_Store
+lib
+tmp
+.vs
+.cache

@@ -1,0 +1,30 @@
+{
+  "compilerOptions": {
+    "target": "es2018",
+    "module": "commonjs",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "strict": true,
+    "strictPropertyInitialization": false,
+    "noEmitHelpers": true,
+    "importHelpers": true,
+    "noEmitOnError": true,
+    "sourceMap": true,
+    "outDir": "lib",
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "allowJs": true,
+    "lib": [
+      "es2015",
+      "es2017",
+      "es2019",
+      "dom"
+    ],
+    "typeRoots" : ["./node_modules/@types"],
+    "baseUrl": "./",
+    "paths": {
+      "@utils": ["src/utils"]
+    }
+  }
+}
