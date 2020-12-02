@@ -1,35 +1,33 @@
+import { xor } from '@utils'
+
 interface PasswordDetail {
-  paramA: number
-  paramB: number
+  params: [number, number]
   character: string
   password: string
 }
 
 const inputToDetails = (input: string): PasswordDetail[] => {
-  const lines = input.split('\n')
-  return lines.reduce((acc: PasswordDetail[], line) => {
+  return input.split('\n').map((line) => {
     const [rawRange, rawCharacter, password] = line.split(' '),
       [paramA, paramB] = rawRange.split('-').map(Number),
       character = rawCharacter.replace(':', '')
-    acc.push({ paramA, paramB, character, password })
-    return acc
-  }, [])
+    return { params: [paramA, paramB], character, password }
+  })
 }
 
 export function solveA(input: string) {
-  return inputToDetails(input).reduce((acc, { paramA, paramB, character, password }) => {
-    const characterCount = password.split('').filter((x) => x === character).length,
-      isAdmissible = characterCount >= paramA && characterCount <= paramB
-    return isAdmissible ? acc + 1 : acc
-  }, 0)
+  return inputToDetails(input).filter(
+    ({ params: [min, max], character, password: [...characters] }) => {
+      const { length: matchCount } = characters.filter((x) => x === character)
+      return matchCount >= min && matchCount <= max
+    }
+  ).length
 }
 
 export function solveB(input: string) {
-  return inputToDetails(input).reduce((acc, { paramA, paramB, character, password }) => {
-    const characters = password.split(''),
-      inFirstIndex = characters[paramA - 1] === character,
-      inSecondIndex = characters[paramB - 1] === character,
-      isAdmissible = (inFirstIndex && !inSecondIndex) || (inSecondIndex && !inFirstIndex)
-    return isAdmissible ? acc + 1 : acc
-  }, 0)
+  return inputToDetails(input).filter(
+    ({ params: [i, j], character, password: [...characters] }) => {
+      return xor(characters[i - 1] === character, characters[j - 1] === character)
+    }
+  ).length
 }
