@@ -8,9 +8,11 @@
     "@types/jest": "^26.0.15",
     "@typescript-eslint/eslint-plugin": "^4.9.0",
     "@typescript-eslint/parser": "^4.9.0",
+    "dotenv": "^8.2.0",
     "eslint": "^7.14.0",
     "eslint-config-prettier": "^6.15.0",
     "eslint-plugin-prettier": "^3.1.4",
+    "got": "^11.8.0",
     "jest": "^26.6.3",
     "prettier": "^2.2.1",
     "ts-jest": "^26.4.4",
@@ -18,13 +20,14 @@
     "typescript": "^4.1.2"
   },
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "view-stats": "ts-node src/tasks/view-leaderboard-stats.ts"
   },
   "prettier": {
     "parser": "typescript",
     "semi": false,
     "singleQuote": true,
-    "printWidth": 120
+    "printWidth": 100
   },
   "eslintConfig": {
     "parser": "@typescript-eslint/parser",
