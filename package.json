@@ -21,7 +21,8 @@
   },
   "scripts": {
     "test": "jest",
-    "view-stats": "ts-node src/tasks/view-leaderboard-stats.ts"
+    "view-stats": "ts-node src/tasks/view-leaderboard-stats.ts",
+    "create-day": "ts-node src/tasks/create-day.ts"
   },
   "prettier": {
     "parser": "typescript",

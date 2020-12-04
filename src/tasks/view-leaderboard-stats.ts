@@ -1,5 +1,4 @@
-import { resolve } from 'path'
-require('dotenv').config({ path: resolve('.env') })
+import { env } from '../utils'
 const got = require('got')
 
 interface AocDayProgress {
@@ -32,7 +31,7 @@ const fetchLeaderboardStats = (
     return got
       .get(`https://adventofcode.com/${year}/leaderboard/private/view/${leaderboardId}.json`, {
         headers: {
-          Cookie: `session=${process.env.AOC_SESSION_TOKEN}`,
+          Cookie: `session=${env.AOC_SESSION_TOKEN}`,
         },
       })
       .json()
