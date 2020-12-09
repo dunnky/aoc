@@ -9,8 +9,8 @@ const inputToNumbers = (input: string) => input.split('\n').map(Number),
     }
     for (let m = preambleCount; m < numbers.length; m++) {
       let valid = false
-      for (let n = m - preambleCount; n < m; n++) {
-        if (sums[n].includes(numbers[m])) {
+      for (let n = m - preambleCount; n < m - 1; n++) {
+        if (sums[n].slice(0, m - n).includes(numbers[m])) {
           valid = true
           break
         }
