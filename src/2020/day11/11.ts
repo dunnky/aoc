@@ -1,128 +1,94 @@
 import { sum } from '@utils'
 
+type SeatLoc = [number, number]
+type SeatMap = SeatLoc[][][]
+type MemoizedSeats = { locations: SeatLoc[]; map: SeatMap }
+
 const inputToSeats = (input: string) => {
     return input.split('\n').map((line) => [...line])
   },
-  seatsToSeatAdjacencyMap = (seats: string[][]) => {
-    const map: { [key: string]: [number, number][] } = {}
+  adjacencyIncrements = [
+    [-1, -1],
+    [-1, +0],
+    [-1, +1],
+    [+0, -1],
+    [+0, +1],
+    [+1, -1],
+    [+1, +0],
+    [+1, +1],
+  ],
+  memoizeSeatAdjacency = (seats: string[][]) => {
+    const locations: SeatLoc[] = [],
+      map: SeatMap = [...seats.map(() => [])]
     for (let r = 0; r < seats.length; r++) {
       for (let c = 0; c < seats[0].length; c++) {
-        map[`${r}|${c}`] = [
-          [-1, -1],
-          [-1, +0],
-          [-1, +1],
-          [+0, -1],
-          [+0, +1],
-          [+1, -1],
-          [+1, +0],
-          [+1, +1],
-        ]
-          .map(([rInc, cInc]) => (seats[r + rInc]?.[c + cInc] ? [r + rInc, c + cInc] : undefined))
-          .filter((x) => x) as [number, number][]
+        if (seats[r][c] === 'L') {
+          locations.push([r, c])
+          map[r][c] = adjacencyIncrements.reduce((acc: SeatLoc[], [rInc, cInc]) => {
+            return acc.concat(seats[r + rInc]?.[c + cInc] ? [[r + rInc, c + cInc]] : [])
+          }, [])
+        }
       }
     }
-    return map
+    return { locations, map }
   },
-  findNextVisibleSeat = (
-    seats: string[][],
-    fromIndex: [number, number],
-    rInc: number,
-    cInc: number
-  ): [number, number] | undefined => {
-    let r = fromIndex[0],
-      c = fromIndex[1],
-      seatValue: string | undefined
-    do {
-      r += rInc
-      c += cInc
-      seatValue = seats[r]?.[c]
-    } while (seatValue && seatValue !== 'L')
-
-    return seatValue === 'L' ? [r, c] : undefined
-  },
-  seatsToSeatVisibilityMap = (seats: string[][]) => {
-    const map: { [key: string]: [number, number][] } = {}
+  memoizeSeatVisibility = (seats: string[][]) => {
+    const locations: SeatLoc[] = [],
+      map: SeatMap = [...seats.map(() => [])],
+      nextVisibleSeat = ([r, c]: SeatLoc, [rInc, cInc]: SeatLoc): SeatLoc | undefined => {
+        let seatValue: string | undefined
+        do {
+          r += rInc
+          c += cInc
+          seatValue = seats[r]?.[c]
+        } while (seatValue && seatValue !== 'L')
+        return seatValue === 'L' ? [r, c] : undefined
+      }
     for (let r = 0; r < seats.length; r++) {
       for (let c = 0; c < seats[0].length; c++) {
-        map[`${r}|${c}`] = [
-          findNextVisibleSeat(seats, [r, c], -1, -1),
-          findNextVisibleSeat(seats, [r, c], -1, +0),
-          findNextVisibleSeat(seats, [r, c], -1, +1),
-          findNextVisibleSeat(seats, [r, c], +0, -1),
-          findNextVisibleSeat(seats, [r, c], +0, +1),
-          findNextVisibleSeat(seats, [r, c], +1, -1),
-          findNextVisibleSeat(seats, [r, c], +1, +0),
-          findNextVisibleSeat(seats, [r, c], +1, +1),
-        ].filter((x) => x) as [number, number][]
+        if (seats[r][c] === 'L') {
+          locations.push([r, c])
+          map[r][c] = adjacencyIncrements.reduce((acc: SeatLoc[], [rInc, cInc]) => {
+            const seat = nextVisibleSeat([r, c], [rInc, cInc])
+            return acc.concat(seat ? [seat] : [])
+          }, [])
+        }
       }
     }
-    return map
+    return { locations, map }
   },
-  updateSeats = (
-    seats: string[][],
-    neighborMap: { [key: string]: [number, number][] },
-    crowdedCount: number
-  ) => {
-    const newSeats: string[][] = [],
+  updateSeats = (seats: string[][], { locations, map }: MemoizedSeats, crowdedCount: number) => {
+    const seatsToFlip: [...SeatLoc, string][] = [],
       seatAt = (r: number, c: number) => (seats[r]?.[c] === '#' ? 1 : 0)
 
-    for (let r = 0; r < seats.length; r++) {
-      newSeats[r] = []
-      for (let c = 0; c < seats[0].length; c++) {
-        const currSeat = seats[r][c]
-        if (currSeat === '.') {
-          newSeats[r][c] = '.'
-          continue
-        }
-        const neighborSeatLocations = neighborMap[`${r}|${c}`],
-          occupiedNeighborCount =
-            neighborSeatLocations.length === 0
-              ? 0
-              : sum(neighborSeatLocations.map(([nr, nc]) => seatAt(nr, nc)))
-        if (currSeat === '#' && occupiedNeighborCount >= crowdedCount) {
-          newSeats[r][c] = 'L'
-        } else if (currSeat === 'L' && occupiedNeighborCount === 0) {
-          newSeats[r][c] = '#'
-        } else {
-          newSeats[r][c] = currSeat
-        }
+    for (const [r, c] of locations) {
+      const crowdCount = sum(map[r][c].map(([nr, nc]) => seatAt(nr, nc)))
+      if (seats[r][c] === '#' && crowdCount >= crowdedCount) {
+        seatsToFlip.push([r, c, 'L'])
+      } else if (seats[r][c] === 'L' && crowdCount === 0) {
+        seatsToFlip.push([r, c, '#'])
       }
     }
-    return newSeats
+    for (const [r, c, val] of seatsToFlip) {
+      seats[r][c] = val
+    }
+    return Boolean(seatsToFlip.length)
   },
-  isSeatingChartStable = (prev: string[][], curr: string[][]) => {
-    for (let r = 0; r < prev.length; r++) {
-      for (let c = 0; c < prev[0].length; c++) {
-        if (prev[r][c] !== curr[r][c]) {
-          return false
-        }
-      }
-    }
-    return true
+  findStableOccupancyCount = (
+    seats: string[][],
+    memoizedSeats: MemoizedSeats,
+    crowdedCount: number
+  ) => {
+    while (updateSeats(seats, memoizedSeats, crowdedCount)) {}
+    return sum(seats.map((row) => sum(row.map((seat) => (seat === '#' ? 1 : 0)))))
   }
 
 export function solveA(input: string) {
-  const seats = inputToSeats(input),
-    seatAdjacencyMap = seatsToSeatAdjacencyMap(seats)
-  let currSeats = seats,
-    prevSeats: string[][]
-  do {
-    prevSeats = currSeats
-    currSeats = updateSeats(prevSeats, seatAdjacencyMap, 4)
-  } while (!isSeatingChartStable(prevSeats, currSeats))
-
-  return sum(currSeats.map((row) => sum(row.map((seat) => (seat === '#' ? 1 : 0)))))
+  const seats = inputToSeats(input)
+  return findStableOccupancyCount(seats, memoizeSeatAdjacency(seats), 4)
 }
 
 export function solveB(input: string) {
-  const seats = inputToSeats(input),
-    seatVisibilityMap = seatsToSeatVisibilityMap(seats)
-  let currSeats = seats,
-    prevSeats: string[][]
-  do {
-    prevSeats = currSeats
-    currSeats = updateSeats(prevSeats, seatVisibilityMap, 5)
-  } while (!isSeatingChartStable(prevSeats, currSeats))
-
-  return sum(currSeats.map((row) => sum(row.map((seat) => (seat === '#' ? 1 : 0)))))
+  const seats = inputToSeats(input)
+  return findStableOccupancyCount(seats, memoizeSeatVisibility(seats), 5)
 }
