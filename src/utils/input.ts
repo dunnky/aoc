@@ -17,3 +17,15 @@ export const prompt = async (label: string) => {
   prompt.close()
   return answer
 }
+export const times = <T>(count: number, producer: () => T): T[] => {
+  return Array.from(new Array(count), () => producer())
+}
+export const range = (count: number) => Array.from(new Array(count), (_, i) => i)
+
+export const padLeft = (value: string, desiredLength: number, filler = ' ') => {
+  while (value.length < desiredLength) {
+    value = filler + value
+  }
+
+  return value.substr(0, desiredLength)
+}
