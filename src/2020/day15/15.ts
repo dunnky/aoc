@@ -2,20 +2,20 @@ const parseInput = (input: string) => {
   return input.split(',').map(Number)
 }
 
-export function solveA(input: string, numberAt = 2020) {
+export function solveA(input: string, turnCount = 2020) {
   const startingNumbers = parseInput(input),
-    lastSpokeMap = new Map<number, number>()
+    latest = new Map<number, number>()
 
   let prevNumber = 0
   for (let i = 0; i < startingNumbers.length; i++) {
-    lastSpokeMap.set(startingNumbers[i], i)
+    latest.set(startingNumbers[i], i)
     prevNumber = startingNumbers[i]
   }
-  for (let i = startingNumbers.length; i < numberAt; i++) {
-    const lastSpokeAtStep = lastSpokeMap.get(prevNumber),
-      lastSpokeStepsAgo = lastSpokeAtStep === undefined ? 0 : i - 1 - lastSpokeAtStep
-    lastSpokeMap.set(prevNumber, i - 1)
-    prevNumber = lastSpokeStepsAgo
+  for (let i = startingNumbers.length; i < turnCount; i++) {
+    const latestTurn = latest.get(prevNumber),
+      latestTurnDiff = latestTurn === undefined ? 0 : i - 1 - latestTurn
+    latest.set(prevNumber, i - 1)
+    prevNumber = latestTurnDiff
   }
   return prevNumber
 }

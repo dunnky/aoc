@@ -1,4 +1,3 @@
-import { read } from '.'
 import { solveA, solveB } from './15'
 
 describe('Day 15', () => {
