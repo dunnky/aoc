@@ -25,13 +25,17 @@ describe('Day ${day}', () => {
 })
 `,
   solutionTemplate = () => `
+const parseInput = (input: string) => {
+  return input.split('\\n')
+}
+
 export function solveA(input: string) {
-  const parsed = input
+  const parsed = parseInput(input)
   return
 }
 
 export function solveB(input: string) {
-  const parsed = input
+  const parsed = parseInput(input)
   return
 }
 `,
